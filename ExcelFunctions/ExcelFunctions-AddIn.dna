@@ -4,6 +4,14 @@
   <ExternalLibrary Path="Newtonsoft.Json.dll" LoadFromBytes="true" ExplicitExports="true" Pack="true" />
   <ExternalLibrary Path="LingvoNET.dll" LoadFromBytes="true" ExplicitExports="true" Pack="true" />
   <ExternalLibrary Path="Tools.dll" LoadFromBytes="true" ExplicitExports="true" Pack="true" />
+  <ExternalLibrary Path="System.Text.Json.dll" LoadFromBytes="true" ExplicitExports="true" Pack="true" />
+  <ExternalLibrary Path="System.Threading.Tasks.Extensions.dll" LoadFromBytes="true" ExplicitExports="true" Pack="true" />
+  <ExternalLibrary Path="Microsoft.Bcl.AsyncInterfaces.dll" LoadFromBytes="true" ExplicitExports="true" Pack="true" />
+  <ExternalLibrary Path="System.Memory.dll" LoadFromBytes="true" ExplicitExports="true" Pack="true" />
+	<ExternalLibrary Path="SYSTEM.RUNTIME.COMPILERSERVICES.UNSAFE.dll" LoadFromBytes="true" ExplicitExports="true" Pack="true" />
+	<ExternalLibrary Path="SYSTEM.TEXT.ENCODINGS.WEB.dll" LoadFromBytes="true" ExplicitExports="true" Pack="true" />
+	<ExternalLibrary Path="SYSTEM.BUFFERS.dll" LoadFromBytes="true" ExplicitExports="true" Pack="true" />
+	<ExternalLibrary Path="SYSTEM.NUMERICS.VECTORS.dll" LoadFromBytes="true" ExplicitExports="true" Pack="true" />
 	<CustomUI>
     <customUI xmlns='http://schemas.microsoft.com/office/2009/07/customui' loadImage='LoadImage'>
       <ribbon startFromScratch="false">
@@ -12,7 +20,7 @@
             <!-- https://bert-toolkit.com/imagemso-list.html -->
             <group id="psqGroup" label="Excel Toolkit">
               <button id="psqRunButton" label="Fill by Template" imageMso="RunThisForm" size="large" onAction="OnFillByTemplateClick" />
-              <button id="psqSyncWithSharepointList" label="Sync with Sharepoint List" imageMso="FileExcelServicesOptions" size="large" onAction="OnSyncWithSharepointListClick" />
+              <!--<button id="psqSyncWithSharepointList" label="Sync with Sharepoint List" imageMso="FileExcelServicesOptions" size="large" onAction="OnSyncWithSharepointListClick" /> -->
               <button id="psqUpdateButton" label="Update" imageMso="QueryUpdate" size="large" onAction="OnUpdateButtonClick" />
               <button id="psqWizardHelpButton" label="How to use Excel Functions?" imageMso="CLViewDialogHelpID" size="large" onAction="OnHowToUseFunctionsClick" />
               <button id="psqAboutButton" label="Help" imageMso="Help" size="large" onAction="OnAboutButtonClick" />

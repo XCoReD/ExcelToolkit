@@ -15,3 +15,13 @@
 /packages
 /Test/bin/Debug
 /Tools/bin/Debug
+/ExcelFunctions/bin/Release
+/ExcelFunctions/obj/Release
+/ExcelFunctions/obj/Release/.NETFramework,Version=v4.8.AssemblyAttributes.cs
+/ExcelToolkit/bin/Release
+/ExcelToolkit/obj/Release
+/ExcelToolkit/ExcelFunctions-AddIn-Packed.xll
+/Publish
+/Test/obj/Release
+/Tools/bin/Release
+/Tools/obj/Release

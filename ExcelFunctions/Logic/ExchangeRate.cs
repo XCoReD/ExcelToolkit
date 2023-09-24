@@ -1,4 +1,6 @@
-﻿using Newtonsoft.Json;
+﻿using ExcelFunctions.Tools;
+using Microsoft.Win32;
+using Newtonsoft.Json;
 using RestSharp;
 using System;
 using System.Collections.Generic;
@@ -8,16 +10,15 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Text;
+using System.Text.Json;
 using Tools;
 
 namespace ExcelFunctions
 {
     public class ExchangeRate
     {
-        //RestClient _restClientNBRB = new RestClient("https://www.nbrb.by/");
-        RestClient _restClientExchangeRates, _restClientExchangeRatesNBP;
-        string _apiKey = "5db46eaf8fadb8c67faa0fbb9cad5595";
-        HttpClient _client;
+        RestClientRegistry _registry; 
+        readonly string _fixerApiKey = "5db46eaf8fadb8c67faa0fbb9cad5595";
 
         static Dictionary<string, double> _ratesDictionnary;
         static ObjectSerializer<Dictionary<string, double>> _ratesSerializer;
@@ -41,11 +42,12 @@ namespace ExcelFunctions
                 if(_ratesDictionnary  == null)
                     _ratesDictionnary = new Dictionary<string, double>();
             }
-            _restClientExchangeRates = new RestClient("http://data.fixer.io");  //no https access in the base plan
 
-            //https://stackoverflow.com/questions/22251689/make-https-call-using-httpclient
-            ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12 | SecurityProtocolType.Tls11 | SecurityProtocolType.Tls;
-            _client = new HttpClient();
+            _registry = new RestClientRegistry();
+            _registry.Register(RestClientRegistry.Supplier.Fixer, "http://data.fixer.io"); //no https access in the base plan
+            _registry.Register(RestClientRegistry.Supplier.BankNBP, "https://api.nbp.pl");
+            _registry.Register(RestClientRegistry.Supplier.BankNBRB, "https://www.nbrb.by", false);
+
         }
 
         ~ExchangeRate()
@@ -75,12 +77,10 @@ namespace ExcelFunctions
 
                 //https://data.fixer.io/api/YYYY-MM-DD?access_key=YOUR_ACCESS_KEY
 
-                RestRequest request = new RestRequest($"/api/{dateString}?access_key={_apiKey}", Method.Get);
-
-                var resultRaw = _restClientExchangeRates.Execute<Object>(request).Data;
-                if (resultRaw != null)
+                var path = $"/api/{dateString}?access_key={_fixerApiKey}";
+                var dict = _registry.Call(RestClientRegistry.Supplier.Fixer, path);
+                if (dict != null)
                 {
-                    var dict = resultRaw as Dictionary<string, object>;
                     object paramValue;
                     if (dict.TryGetValue("base", out paramValue))
                     {
@@ -89,20 +89,26 @@ namespace ExcelFunctions
                         object fieldsRaw;
                         if (dict.TryGetValue("rates", out fieldsRaw))
                         {
-                            var dictRates = fieldsRaw as Dictionary<string, object>;
-                            object rateRaw, rateRawBase;
-                            if (dictRates.TryGetValue(currency, out rateRaw) && dictRates.TryGetValue(baseCurrency, out rateRawBase))
+                            var j = fieldsRaw as JsonElement?;
+                            if(j != null)
                             {
-                                double rate = ToDouble(rateRaw);
-                                double rateBase = ToDouble(rateRawBase);
+                                var dictRates = j.Value.ToObject<Dictionary<string, object>>();
+                                object rateRaw, rateRawBase;
+                                if (dictRates.TryGetValue(currency, out rateRaw) && dictRates.TryGetValue(baseCurrency, out rateRawBase))
+                                {
+                                    double rate = ToDouble(rateRaw);
+                                    double rateBase = ToDouble(rateRawBase);
 
-                                result = rate / rateBase;
+                                    result = rate / rateBase;
 
-                                _ratesDictionnary.Add(key, result);
-                                ++_ratesAdded;
+                                    _ratesDictionnary.Add(key, result);
+                                    ++_ratesAdded;
+                                }
+                                else
+                                    notes = $"currency {currency} or {baseCurrency} is not found in the rates array";
                             }
                             else
-                                notes = $"currency {currency} or {baseCurrency} is not found in the rates array";
+                                notes = $"rates array is not found";
                         }
                         else
                             notes = "rates section is not found";
@@ -113,58 +119,7 @@ namespace ExcelFunctions
                     }
                 }
                 else
-                    notes = "REST response is empty";
-
-                //handling exchangerate.io - old case
-                /*if (resultRaw != null)
-                {
-                    var dict = resultRaw as Dictionary<string, object>;
-                    object fieldsRaw;
-                    if (dict.TryGetValue("rates", out fieldsRaw))
-                    {
-                        var dictRates = fieldsRaw as Dictionary<string, object>;
-                        object rateRaw;
-                        if (dictRates.TryGetValue(currency, out rateRaw))
-                        {
-                            //self-test
-//#if DEBUG
-                            if (dict.TryGetValue("base", out fieldsRaw))
-                            {
-                                Debug.Assert(fieldsRaw as string == baseCurrency);
-                                if (dict.TryGetValue("date", out fieldsRaw))
-                                {
-                                    var s = fieldsRaw as string;
-                                    if(s != dateString)
-                                    {
-                                        //actual rate may be from the day before, it is OK
-                                        DateTime actual;
-                                        if(DateTime.TryParse(s, out actual))
-                                        {
-                                            if(actual > date || (actual - date).TotalDays > 2)
-                                            {
-                                                notes = "returned rate for date " + actual.ToString();
-                                            }
-                                        }
-                                        else
-                                        {
-                                            notes = "returned date which cannot be parsed: " + s;
-                                        }
-                                    }
-                                }
-                            }
-//#endif
-                            result = (double)rateRaw;
-                        }
-                        else
-                            notes = "currency is not found in the rates array in the REST response";
-                    }
-                    else
-                        notes = "rates section is not found in the REST response";
-
-                }
-                else
-                    notes = "REST response is empty";
-                */
+                    notes = "call failed";
 
                 log.Info($"DT.GetExchangeRate: date ({dateString}), currency ({currency}), baseCurrency ({baseCurrency}), result ({result}), notes ({notes})");
                 log.Flush();
@@ -186,37 +141,33 @@ namespace ExcelFunctions
                 string dateString = date.ToString("yyyy-MM-dd");
                 string notes = null;
 
-                if (_restClientExchangeRatesNBP == null)
-                    _restClientExchangeRatesNBP = new RestClient("https://api.nbp.pl");
                 //https://api.nbp.pl/api/exchangerates/rates/a/usd/2022-10-28/
                 //{"table":"A","currency":"dolar amerykański","code":"USD","rates":[{"no":"210/A/NBP/2022","effectiveDate":"2022-10-28","mid":4.7477}]}
 
-                RestRequest request = new RestRequest($"/api/exchangerates/rates/{type}/{currency}/{dateString}?format=json", Method.Get);
+                var path = $"/api/exchangerates/rates/{type}/{currency}/{dateString}?format=json";
 
-                var resultRaw = _restClientExchangeRatesNBP.Execute<Object>(request).Data;
-                if (resultRaw != null)
+                var dict = _registry.Call(RestClientRegistry.Supplier.BankNBP, path);
+                if (dict != null)
                 {
-                    var dict = resultRaw as Dictionary<string, object>;
                     object paramValue;
                     if (dict.TryGetValue("code", out paramValue))
                     {
-                        string currencyReturned = paramValue as string;
-                        if(string.Compare(currencyReturned, currency, true) == 0)
+                        string currencyReturned = ToString(paramValue);
+                        if (string.Compare(currencyReturned, currency, true) == 0)
                         {
                             object fieldsRaw;
                             if (dict.TryGetValue("rates", out fieldsRaw))
                             {
-                                var records = fieldsRaw as IList<object>;
-                                var record0 = records[0];
-                                var dictRates = record0 as Dictionary<string, object>;
+                                var records = (fieldsRaw as JsonElement?).Value.ToObject<IList<object>>();
+                                var dictRates = (records[0] as JsonElement?).Value.ToObject<Dictionary<string, object>>();
                                 object noRaw, midRaw, dateRaw;
-                                if (dictRates.TryGetValue("no", out noRaw) 
+                                if (dictRates.TryGetValue("no", out noRaw)
                                     && dictRates.TryGetValue("effectiveDate", out dateRaw)
                                     && dictRates.TryGetValue("mid", out midRaw))
                                 {
                                     double rate = ToDouble(midRaw);
-                                    string effectiveDate = dateRaw as string;
-                                    if(effectiveDate != dateString)
+                                    string effectiveDate = ToString(dateRaw);
+                                    if (effectiveDate != dateString)
                                         notes = $"asked {dateString}, returned {effectiveDate}";
                                     else
                                     {
@@ -235,12 +186,10 @@ namespace ExcelFunctions
                             notes = "no requested currency returned";
                     }
                     else
-                    {
-                        notes = "coulnd't find 'code' section";
-                    }
+                        notes = "response not recognized";
                 }
                 else
-                    notes = "REST response is empty";
+                    notes = "call failed";
 
                 log.Info($"DT.GetExchangeRateNBP: date ({dateString}), currency ({currency}), result ({result}), notes ({notes})");
                 log.Flush();
@@ -249,32 +198,6 @@ namespace ExcelFunctions
             return result;
         }
 
-        static double ToDouble(object value)
-        {
-            double result = 0;
-            try
-            {
-                result = (double)value;
-            }
-            catch(InvalidCastException)
-            {
-                result = (long)value;
-            }
-            return result;
-        }
-        string HttpRequestGet(string url, EasyLog log)
-        {
-            try
-            {
-                var response = _client.SendAsync(new HttpRequestMessage(HttpMethod.Get, url)).Result;
-                return response.Content.ReadAsStringAsync().Result;
-            }
-            catch(Exception ex)
-            {
-                log.Error($"HttpRequestGet at {url} failed", ex);
-                return null;
-            }
-        }
         public double GetExchangeUSDRateNBRB(DateTime date)
         {
             double result = 0.0;
@@ -287,59 +210,68 @@ namespace ExcelFunctions
                 string dateString = date.ToString("yyyy-MM-dd");
                 string notes = null;
 
-                /*
-                RestRequest request = new RestRequest($"/API/ExRates/Rates/145", Method.GET);
-                request.AddHeader("Accept", "application/json");
-                request.AddHeader("Content-Type", "application/json");
-                request.AddParameter("onDate", dateString);
-
-                var resultRaw = _restClientNBRB.Execute<Object>(request, Method.GET).Data;
-                if (resultRaw != null)
+                string path = $"/API/ExRates/Rates/431?onDate={dateString}";
+                var dict = _registry.Call(RestClientRegistry.Supplier.BankNBRB, path);
+                if (dict != null)
                 {
-                    var dict = resultRaw as Dictionary<string, object>;
                     object fieldsRaw;
                     if (dict.TryGetValue("Cur_OfficialRate", out fieldsRaw))
                     {
-                        result = (double)fieldsRaw;
+                        result = ToDouble(fieldsRaw);
+
+                        _ratesDictionnary.Add(key, result);
+                        ++_ratesAdded;
                     }
                     else
                         notes = "Cur_OfficialRate field is not found in the REST response";
                 }
                 else
-                    notes = "REST response is empty";
-                    */
-
-                string url = $"https://www.nbrb.by/API/ExRates/Rates/431?onDate={dateString}";
-                string response = HttpRequestGet(url, log);
-                if(response == null)
-                    notes = "REST response is empty";
-                else
-                {
-                    try
-                    {
-                        var dict = JsonConvert.DeserializeObject<Dictionary<string, object>>(response);
-                        object fieldsRaw;
-                        if (dict.TryGetValue("Cur_OfficialRate", out fieldsRaw))
-                        {
-                            result = (double)fieldsRaw;
-
-                            _ratesDictionnary.Add(key, result);
-                            ++_ratesAdded;
-                        }
-                        else
-                            notes = "Cur_OfficialRate field is not found in the REST response";
-                    }
-                    catch(JsonReaderException)
-                    {
-                        notes = "Got Json deserialize exception";
-                    }
-                }
+                    notes = "call failed";
 
                 log.Info($"DT.ExchangeUSDRateNBRB: date ({dateString}), result ({result}), notes ({notes})");
                 log.Flush();
             }
 
             return result;
+        }
+
+        static double ToDouble(object value)
+        {
+            double result = 0;
+            if (value is JsonElement)
+            {
+                var v = (value as JsonElement?).Value;
+                if (!v.TryGetDouble(out result))
+                {
+                    if (v.TryGetInt64(out long l))
+                        result = l;
+                }
+            }
+            else
+            {
+                try
+                {
+                    result = (double)value;
+                }
+                catch (InvalidCastException)
+                {
+                    result = (long)value;
+                }
+            }
+            return result;
+        }
+
+        static string ToString(object value)
+        {
+            if (value is JsonElement)
+            {
+                var v = (value as JsonElement?).Value;
+                return v.ToString();
+            }
+            else
+            {
+                return value as string;
+            }
         }
 
         public void Dispose()

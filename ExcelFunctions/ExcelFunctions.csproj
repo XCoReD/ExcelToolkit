@@ -21,7 +21,7 @@
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
     <OutputPath>bin\Debug\</OutputPath>
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <DefineConstants>TRACE;DEBUG;MAKE_ABW_PUBLIC</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
@@ -29,7 +29,7 @@
     <DebugType>pdbonly</DebugType>
     <Optimize>true</Optimize>
     <OutputPath>bin\Release\</OutputPath>
-    <DefineConstants>TRACE</DefineConstants>
+    <DefineConstants>TRACE;MAKE_ABW_PUBLIC</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
@@ -167,8 +167,11 @@
     <Compile Include="Logic\RussianDeclination.cs" />
     <Compile Include="Logic\SharepointListProcessor.cs" />
     <Compile Include="Logic\TemplateProcessor.cs" />
+    <Compile Include="Tools\JsonExtensions.cs" />
+    <Compile Include="Tools\RestClientRegistry.cs" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="app.config" />
     <None Include="ExcelFunctions-AddIn.dna">
       <SubType>Designer</SubType>
     </None>
@@ -204,11 +207,9 @@ copy "$(TargetDir)ExcelFunctions-AddIn64-Packed.xll" "C:\Users\God\AppData\Roami
     <PropertyGroup>
       <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
     </PropertyGroup>
-    <Error Condition="!Exists('..\packages\StrongNamer.For.MsBuild12.1.0.27\build\StrongNamer.For.MsBuild12.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\StrongNamer.For.MsBuild12.1.0.27\build\StrongNamer.For.MsBuild12.targets'))" />
     <Error Condition="!Exists('..\packages\ExcelDna.AddIn.1.6.0\build\ExcelDna.AddIn.props')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\ExcelDna.AddIn.1.6.0\build\ExcelDna.AddIn.props'))" />
     <Error Condition="!Exists('..\packages\ExcelDna.AddIn.1.6.0\build\ExcelDna.AddIn.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\ExcelDna.AddIn.1.6.0\build\ExcelDna.AddIn.targets'))" />
   </Target>
-  <Import Project="..\packages\StrongNamer.For.MsBuild12.1.0.27\build\StrongNamer.For.MsBuild12.targets" Condition="Exists('..\packages\StrongNamer.For.MsBuild12.1.0.27\build\StrongNamer.For.MsBuild12.targets')" />
   <Import Project="..\packages\ExcelDna.AddIn.1.6.0\build\ExcelDna.AddIn.targets" Condition="Exists('..\packages\ExcelDna.AddIn.1.6.0\build\ExcelDna.AddIn.targets')" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

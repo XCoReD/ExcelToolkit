@@ -1,0 +1,25 @@
+<DnaLibrary Name="DT ExcelFunctions Add-In" RuntimeVersion="v4.0">
+  <ExternalLibrary Path="ExcelFunctions.dll" ExplicitExports="false" LoadFromBytes="true" Pack="true" />
+  <ExternalLibrary Path="RestSharp.dll" LoadFromBytes="true" ExplicitExports="true" Pack="true" />
+  <ExternalLibrary Path="Newtonsoft.Json.dll" LoadFromBytes="true" ExplicitExports="true" Pack="true" />
+  <ExternalLibrary Path="LingvoNET.dll" LoadFromBytes="true" ExplicitExports="true" Pack="true" />
+  <ExternalLibrary Path="Tools.dll" LoadFromBytes="true" ExplicitExports="true" Pack="true" />
+	<CustomUI>
+    <customUI xmlns='http://schemas.microsoft.com/office/2009/07/customui' loadImage='LoadImage'>
+      <ribbon startFromScratch="false">
+        <tabs>
+          <tab id="psqTab" label="DT" insertAfterMso="TabAddIns">
+            <!-- https://bert-toolkit.com/imagemso-list.html -->
+            <group id="psqGroup" label="Excel Toolkit">
+              <button id="psqRunButton" label="Fill by Template" imageMso="RunThisForm" size="large" onAction="OnFillByTemplateClick" />
+              <button id="psqSyncWithSharepointList" label="Sync with Sharepoint List" imageMso="FileExcelServicesOptions" size="large" onAction="OnSyncWithSharepointListClick" />
+              <button id="psqUpdateButton" label="Update" imageMso="QueryUpdate" size="large" onAction="OnUpdateButtonClick" />
+              <button id="psqWizardHelpButton" label="How to use Excel Functions?" imageMso="CLViewDialogHelpID" size="large" onAction="OnHowToUseFunctionsClick" />
+              <button id="psqAboutButton" label="Help" imageMso="Help" size="large" onAction="OnAboutButtonClick" />
+            </group>
+          </tab>
+        </tabs>
+      </ribbon>
+    </customUI>
+  </CustomUI>
+</DnaLibrary>

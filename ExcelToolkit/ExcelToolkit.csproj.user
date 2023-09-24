@@ -1,8 +1,10 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
-    <PublishUrlHistory>C:\Users\God\Desktop\|\\SRV-SUP-1033\ExcelToolkit\</PublishUrlHistory>
-    <InstallUrlHistory>https://extresources.scnsoft.com/ExcelToolkit/</InstallUrlHistory>
+    <PublishUrlHistory>
+    </PublishUrlHistory>
+    <InstallUrlHistory>
+    </InstallUrlHistory>
     <SupportUrlHistory>https://confluence.scnsoft.com/display/~dtrus/Excel+Toolkit</SupportUrlHistory>
   </PropertyGroup>
 </Project>

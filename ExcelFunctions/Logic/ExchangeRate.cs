@@ -1,6 +1,5 @@
 ﻿using Newtonsoft.Json;
 using RestSharp;
-using RestSharp.Serialization.Json;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -76,7 +75,7 @@ namespace ExcelFunctions
 
                 //https://data.fixer.io/api/YYYY-MM-DD?access_key=YOUR_ACCESS_KEY
 
-                RestRequest request = new RestRequest($"/api/{dateString}?access_key={_apiKey}", Method.GET);
+                RestRequest request = new RestRequest($"/api/{dateString}?access_key={_apiKey}", Method.Get);
 
                 var resultRaw = _restClientExchangeRates.Execute<Object>(request).Data;
                 if (resultRaw != null)
@@ -192,7 +191,7 @@ namespace ExcelFunctions
                 //https://api.nbp.pl/api/exchangerates/rates/a/usd/2022-10-28/
                 //{"table":"A","currency":"dolar amerykański","code":"USD","rates":[{"no":"210/A/NBP/2022","effectiveDate":"2022-10-28","mid":4.7477}]}
 
-                RestRequest request = new RestRequest($"/api/exchangerates/rates/{type}/{currency}/{dateString}?format=json", Method.GET);
+                RestRequest request = new RestRequest($"/api/exchangerates/rates/{type}/{currency}/{dateString}?format=json", Method.Get);
 
                 var resultRaw = _restClientExchangeRatesNBP.Execute<Object>(request).Data;
                 if (resultRaw != null)

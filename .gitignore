@@ -1,0 +1,17 @@
+﻿################################################################################
+# This .gitignore file was automatically created by Microsoft(R) Visual Studio.
+################################################################################
+
+/.vs/ExcelToolkit/v17
+/.vs/ExcelToolkit/FileContentIndex
+/ExcelFunctions/obj/Debug
+/ExcelToolkit/obj/Debug
+/Test/obj/Debug
+/Tools/obj/Debug
+/ExcelFunctions/bin/Debug
+/ExcelFunctions/ExcelFunctions.csproj.user
+/ExcelToolkit/bin/Debug
+/ExcelToolkit/ExcelFunctions-AddIn64-Packed.xll
+/packages
+/Test/bin/Debug
+/Tools/bin/Debug

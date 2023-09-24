@@ -8,7 +8,7 @@ using System.Reflection;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
-namespace ExcelToolkit
+namespace ExcelFunctions
 {
     partial class AboutBox1 : Form
     {

@@ -1,4 +1,4 @@
-﻿namespace ExcelToolkit
+﻿namespace ExcelFunctions
 {
     partial class AboutBox1
     {

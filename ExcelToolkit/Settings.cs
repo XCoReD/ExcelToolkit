@@ -187,7 +187,7 @@ namespace ExcelToolkit
                 bool result = RegisterXll(_app, XllName);
                 if (!result)
                 {
-                    MessageBox.Show($"Excel plugin registration failed.\n\nPlease do it manually, following guide at Confluence.\n", "ExcelToolkit", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    MessageBox.Show($"Excel plugin registration failed.\n\nPlease do it manually, following guide.\n", "ExcelToolkit", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 }
 
             }
